@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mines Hack Panel</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon"></link>
+  <style>
+    /* === Styles === */
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --border-color: #0ff;
+      --accent-color: #0f0;
+      --text-color: #ccc;
+      --error-color: #f00;
+      --lock-color: #f90;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Consolas', 'Courier New', monospace;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: var(--card-bg);
+      border-bottom: 2px solid var(--accent-color);
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      margin-right: 10px;
+    }
+
+    .title {
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+
+    .section {
+      width: 100%;
+      padding: 40px 20px;
+    }
+
+    .hero {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: var(--accent-color);
+    }
+
+    .btn {
+      background: none;
+      border: 2px solid var(--accent-color);
+      color: var(--accent-color);
+      padding: 10px 20px;
+      cursor: pointer;
+      font-family: 'Consolas', 'Courier New', monospace;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      background-color: var(--accent-color);
+      color: #000;
+      box-shadow: 0 0 10px var(--accent-color);
+    }
+
+    .primary-btn {
+      border-color: var(--accent-color);
+    }
+
+    .nav-btn {
+      border-color: var(--border-color);
+    }
+
+    .nav-btn:hover {
+      background-color: var(--border-color);
+      color: #000;
+      box-shadow: 0 0 10px var(--border-color);
+    }
+
+
+    .card {
+      background-color: var(--card-bg);
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      max-width: 500px;
+      margin: 0 auto;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+    }
+
+    .input-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-color);
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-color);
+      font-family: 'Consolas', 'Courier New', monospace;
+      margin-bottom: 15px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 5px var(--accent-color);
+    }
+
+    .error-message {
+      color: var(--error-color);
+      margin-top: 10px;
+      font-size: 0.9rem;
+      min-height: 1.2em;
+    }
+
+    .lock-message {
+      color: var(--lock-color);
+      margin-top: 10px;
+      font-size: 0.9rem;
+      min-height: 1.2em;
+    }
+
+    .password-container {
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .form-container {
+      position: relative;
+    }
+
+    .step-indicator {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    .step {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    .step.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .form-navigation {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .run-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .signals-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .signals-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    #active-count {
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-gap: 8px;
+    }
+
+    .tile {
+      background-color: #333;
+      position: relative;
+      width: 100%;
+      padding-top: 100%;
+      border: 1px solid #444;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    .tile-inner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .tile.active {
+      background-color: var(--accent-color);
+      box-shadow: 0 0 10px var(--accent-color);
+      animation: glow 1s ease-in-out;
+    }
+
+    @keyframes glow {
+      0% {
+        box-shadow: 0 0 5px var(--accent-color);
+      }
+      50% {
+        box-shadow: 0 0 20px var(--accent-color);
+      }
+      100% {
+        box-shadow: 0 0 5px var(--accent-color);
+      }
+    }
+
+    .fade-in {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .footer {
+      margin-top: auto;
+      padding: 10px 20px;
+      text-align: center;
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: repeat(5, minmax(30px, 1fr));
+      }
+      .hero h1 {
+        font-size: 1.5rem;
+      }
+      .btn {
+        padding: 8px 16px;
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">⚙️</div>
+    <div class="title"></div>
+  </header>
+
+  <!-- 0 Signals Left Section -->
+  <section id="no-signals-left-section" class="section hidden">
+    <div class="no-signals-left-container card">
+      <label class="input-label" style="white-space: pre-line;">
+        You have no more free signals available.
+        Please top up your account balance or enter a promotional code to continue receiving free signals.
+
+        From $100 = 1 signal
+        From $300 = 5 signals (most popular)
+        From $1000 = "GOD'S MODE"
+      </label>
+      <input
+        type="text"
+        id="promo-input"
+        class="input-field"
+        placeholder="Promocode"
+      />
+      <a id="promo-submit" class="btn nav-btn">Submit</a>
+      <a id="promo-deposit" href="https://t.me/MinesTonBot/app?startapp=kHeh3TfwyzmM5yLM" target="_blank" class="btn nav-btn">Deposit</a>
+      <a id="promo-continue" class="btn nav-btn">Continue</a>
+      <div id="promo-error" class="error-message"></div>
+      <div id="promo-lock" class="lock-message"></div>
+    </div>
+  </section>
+
+  <!-- Landing Section -->
+  <section id="landing" class="section">
+    <div class="hero">
+      <h1>Mines Hack Panel</h1>
+      <a
+        id="launch-btn"
+        href="https://t.me/MinesTonBot/app?startapp=kHeh3TfwyzmM5yLM"
+        target="_blank"
+        class="btn primary-btn"
+        >Launch Mines</a
+      >
+    </div>
+  </section>
+
+  <!-- Password Gate Section -->
+  <section id="password-section" class="section hidden">
+    <div class="password-container card">
+      <label for="password-input" class="input-label">
+        Enter password to access blogger dashboard:
+      </label>
+      <input
+        type="password"
+        id="password-input"
+        class="input-field"
+        placeholder="Password"
+      />
+      <button id="password-submit" class="btn nav-btn">Submit</button>
+      <div id="password-error" class="error-message"></div>
+      <div id="password-lock" class="lock-message"></div>
+    </div>
+  </section>
+
+  <!-- Multi-Step Form Section -->
+  <section id="form-section" class="section hidden">
+    <div class="form-container card">
+      <div id="step-indicator" class="step-indicator">Step 1 of 7</div>
+
+      <!-- Step 1: Telegram ID (numeric) -->
+      <div class="step" data-step="1">
+        <label for="telegram-id" class="input-label">Telegram ID *</label>
+        <input
+          type="text"
+          id="telegram-id"
+          class="input-field"
+          placeholder=""
+        />
+      </div>
+
+      <!-- Step 2: IP Address -->
+      <div class="step" data-step="2">
+        <label for="ip-address" class="input-label">Your IP Address *</label>
+        <input
+          type="text"
+          id="ip-address"
+          class="input-field"
+          placeholder=""
+        />
+      </div>
+
+      <!-- Step 3: Server Seed -->
+      <div class="step" data-step="3">
+        <label for="server-seed" class="input-label">Server Seed *</label>
+        <input
+          type="text"
+          id="server-seed"
+          class="input-field"
+          placeholder=""
+        />
+      </div>
+
+      <!-- Step 4: Client Seed -->
+      <div class="step" data-step="4">
+        <label for="client-seed" class="input-label">Client Seed *</label>
+        <input
+          type="text"
+          id="client-seed"
+          class="input-field"
+          placeholder=""
+        />
+      </div>
+
+      <!-- Step 5: Number of Bombs -->
+      <div class="step" data-step="5">
+        <label for="num-bombs" class="input-label">Number of Bombs (1–24) *</label>
+        <input
+          type="number"
+          id="num-bombs"
+          class="input-field"
+          placeholder=""
+          min="1"
+          max="24"
+        />
+      </div>
+
+      <!-- Step 6: Partner Code -->
+      <div class="step" data-step="6">
+        <label for="partner-code" class="input-label">Partner Code *</label>
+        <input
+          type="text"
+          id="partner-code"
+          class="input-field"
+          placeholder=""
+        />
+      </div>
+
+      <!-- Step 7: Promo Code for Signals (optional)
+      <div class="step" data-step="7">
+        <label for="promo-code" class="input-label">Promo Code for Signals</label>
+        <input
+          type="text"
+          id="promo-code"
+          class="input-field"
+          placeholder=""
+        />
+      </div> -->
+
+      <!-- Navigation Buttons -->
+      <div class="form-navigation">
+        <button id="prev-btn" class="btn nav-btn" disabled>Previous</button>
+        <button id="next-btn" class="btn nav-btn">Next</button>
+      </div>
+    </div>
+
+    <!-- Run Signals Button -->
+    <div class="run-container">
+      <button id="run-btn" class="btn primary-btn hidden">Run Signals</button>
+    </div>
+  </section>
+
+  <!-- Signals Panel Section -->
+  <section id="signals-section" class="section hidden">
+    <div class="signals-container card fade-in">
+      <div id="signals-header" class="signals-header">
+        <span id="active-count">Active Mines: 5 / 25</span>
+        <button id="next-signal-btn" class="btn nav-btn">Next Signal</button>
+      </div>
+      <div id="grid" class="grid hidden"></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 MikiDot. All rights reserved.</p>
+  </footer>
+
+  <script>
+    /*
+      === JavaScript logic with API checks, password attempts, and validations ===
+
+      Please replace:
+        const API_BASE_URL = 'https://api.example.com';
+           → with your real API base URL (no trailing slash).
+        const OWNER_TELEGRAM_ID = 'YOUR_OWNER_TELEGRAM_ID';
+           → with your Telegram ID (referalId).
+    */
+
+    const API_KEY = '4edfe05f1159c1e4f812f72afc7e3e33b776f714a5d384f5e58e3c5e2f44c3b6';
+    const API_BASE_URL = 'https://api.mines.tg/api/v1'; // Replace with your real API base URL
+    const OWNER_TELEGRAM_ID = '687708315'; // Replace with your Telegram ID (referalId)
+    const ADMIN_TELEGRAM_ID = '687708315'; // Admin ID always allowed
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // === Elements ===
+      const launchBtn = document.getElementById('launch-btn');
+      const passwordSection = document.getElementById('password-section');
+      const passwordInput = document.getElementById('password-input');
+      const	passwordSubmit = document.getElementById('password-submit');
+      const	passwordError = document.getElementById('password-error');
+      const	passwordLock = document.getElementById('password-lock');
+      const	promoSubmit = document.getElementById('promo-submit');
+      const	promoContinue = document.getElementById('promo-continue');
+      const	promoDeposit = document.getElementById('promo-deposit');
+      const promoInput = document.getElementById('promo-input');
+      const	formSection = document.getElementById('form-section');
+      const	steps = Array.from(document.querySelectorAll('.step'));
+      const	prevBtn = document.getElementById('prev-btn');
+      const	nextBtn = document.getElementById('next-btn');
+      const	stepIndicator = document.getElementById('step-indicator');
+      const	runBtn = document.getElementById('run-btn');
+      const	signalsSection = document.getElementById('signals-section');
+      const	signalsLeftSection = document.getElementById('no-signals-left-section');
+      const	gridContainer = document.getElementById('grid');
+      const	nextSignalBtn = document.getElementById('next-signal-btn');
+      const	activeCount = document.getElementById('active-count');
+
+      let	currentStep = 0;
+      let	passwordAttempts = 0;
+      let	isLocked = false;
+      let 	telegramId = 0;
+      let	allGood = false;
+      let 	jwt = null;
+
+      if (!localStorage.hasOwnProperty('hasFirstDeposit')){
+	 localStorage.setItem('hasFirstDeposit', 1);
+      }
+      if (!localStorage.hasOwnProperty('signalsLeft')){
+	 localStorage.setItem('signalsLeft', 0);
+      }
+      if (!localStorage.hasOwnProperty('promoUsedValues')){
+	 localStorage.setItem('promoUsedValues', []);
+      }
+
+      
+      if (!localStorage.hasOwnProperty('promoUsedNum')){
+	      localStorage.setItem('promoUsedNum', 0);
+      }
+      if (!localStorage.hasOwnProperty('promo0Val')){
+	      localStorage.setItem('promo0Val', "");
+      }
+      if (!localStorage.hasOwnProperty('promo1Val')){
+	      localStorage.setItem('promo1Val', "");
+      }
+      if (!localStorage.hasOwnProperty('promo2Val')){
+	      localStorage.setItem('promo2Val', "");
+      }
+      if (!localStorage.hasOwnProperty('DEBUG')){
+	      localStorage.setItem('DEBUG', 0);
+      }
+      
+	let isAdmin = false;
+
+     let timerId = setInterval(async () => {
+  
+	if (localStorage.getItem('signalsLeft') < 0){
+	 localStorage.setItem('signalsLeft', 0);
+      }
+
+    let firstDepositOK = 1;
+
+
+  if (localStorage.getItem("DEBUG") == 0){
+    firstDepositOK = await apiGet(
+          `/CheckDepositDollar/${telegramId}?dollars=1`,jwt
+        );
+  }
+
+  
+
+
+	localStorage.setItem('hasFirstDeposit', 1);
+  localStorage.setItem('DEBUG', 0);
+
+ 	const repeatDeposit1000OK = await apiGet(
+            `/CheckRepeatedDepositDollar/${telegramId}?dollars=1000`,jwt
+          );
+
+	const repeatDeposit300OK = await apiGet(
+            `/CheckRepeatedDepositDollar/${telegramId}?dollars=300`,jwt
+          );
+
+	const repeatDeposit100OK = await apiGet(
+            `/CheckRepeatedDepositDollar/${telegramId}?dollars=100`,jwt
+          );
+
+        if (repeatDeposit1000OK) {
+	    localStorage.setItem('signalsLeft', 999999999);
+        }else if (repeatDeposit300OK){
+	    localStorage.setItem('signalsLeft', 5);
+	}else if (repeatDeposit100OK){
+	    localStorage.setItem('signalsLeft', 1);
+	}
+
+
+	if (!allGood){
+	    return;
+	}
+
+	if (localStorage.getItem('hasFirstDeposit') == 1){
+	    if (localStorage.getItem('signalsLeft') == 0){
+
+	    }else{
+        signalsSection.classList.remove('hidden');
+        signalsLeftSection.classList.add('hidden');
+        gridContainer.classList.remove('hidden');
+	    }
+	}else{
+	      signalsSection.classList.remove('hidden');
+        signalsLeftSection.classList.add('hidden');
+        gridContainer.classList.remove('hidden');
+	}	
+	
+	
+	}, 500);
+
+
+      // promo button
+
+      promoSubmit.addEventListener('click', () => {
+        const value = promoInput.value.trim();
+
+        if (localStorage.getItem("promoUsedNum") < 3 || isAdmin){
+          if (!value){
+            alert("Promo Code is incorrect.");
+            return;
+          }
+          if (!value.includes('R73EN')) {
+            alert("Promo Code is incorrect.");
+            return;
+          }
+
+          for(let i = 0; i < localStorage.getItem("promoUsedNum"); i++){
+            if (localStorage.getItem(`promo${i}Val`) == value){
+              alert("The entered promo code has already been used before.");
+              return;
+            }
+          }
+          
+
+
+          localStorage.setItem(`promo${localStorage.getItem("promoUsedNum")}Val`, value);
+
+          localStorage.setItem("promoUsedNum", Number(localStorage.getItem("promoUsedNum")) + 1);
+          localStorage.setItem('signalsLeft', 1);
+          signalsSection.classList.remove('hidden');
+          signalsLeftSection.classList.add('hidden');
+          gridContainer.classList.remove('hidden');
+
+
+
+          return;
+        }
+
+        alert('Entered promo code was incorrect or has already been used');
+        // var win = window.open('https://t.me/MinesTonBot/app?startapp=kHeh3TfwyzmM5yLM', '_blank');
+        // if (win) {
+        //     //Browser has allowed it to be opened
+        //     win.focus();
+        // } else {
+        //     //Browser has blocked it
+        //     alert('Please allow popups for this website');
+        // }
+        // alert("");
+        // document.getElementById('landing').classList.add('hidden');
+       	// passwordSection.classList.remove('hidden');
+      });
+
+
+      promoContinue.addEventListener('click', () => {
+        if (isAdmin == true){
+          localStorage.setItem("signalsLeft", Number(localStorage.getItem("signalsLeft")) + 5);
+                  signalsSection.classList.remove('hidden');
+                  signalsLeftSection.classList.add('hidden');
+                  gridContainer.classList.remove('hidden');
+          return;
+        }
+
+        if (localStorage.getItem('signalsLeft') > 0){
+          localStorage.setItem('signalsLeft', 1);
+          signalsSection.classList.remove('hidden');
+          signalsLeftSection.classList.add('hidden');
+          gridContainer.classList.remove('hidden');
+          return;
+        }
+
+        // alert('Please deposit\n\n?? From $100 = 1 signals\n?? From $300 = 5 signals (most popular)\n?? From $1000 = \"GOD\'S MODE\"');
+        // var win = window.open('https://t.me/MinesTonBot/app?startapp=kHeh3TfwyzmM5yLM', '_blank');
+        // if (win) {
+        //     //Browser has allowed it to be opened
+        //     win.focus();
+        // } else {
+        //     //Browser has blocked it
+        //     alert('Please allow popups for this website');
+        // }
+        // alert("");
+        // document.getElementById('landing').classList.add('hidden');
+       	// passwordSection.classList.remove('hidden');
+      });
+
+
+      // === Show Password Gate after Launch ===
+      launchBtn.addEventListener('click', () => {
+        document.getElementById('landing').classList.add('hidden');
+       	passwordSection.classList.remove('hidden');
+      });
+
+      // === Password Gate Logic ===
+      passwordSubmit.addEventListener('click', () => {
+        if (isLocked) return;
+        const value = passwordInput.value.trim();
+        if (value === 'HgsiYt5257!hsGQw') {
+          // Correct password
+         	passwordError.textContent = '';
+         	passwordLock.textContent = '';
+         	passwordSection.classList.add('hidden');
+         	formSection.classList.remove('hidden');
+         	showStep(0);
+        } else {
+          // Incorrect password
+         	passwordAttempts++;
+         	passwordError.textContent = 'Incorrect password.';
+         	if (passwordAttempts >= 3) {
+           	// Lock for 30 seconds
+           	isLocked = true;
+           	passwordLock.textContent = 'Too many attempts. Try again in 30 seconds.';
+           	passwordSubmit.disabled = true;
+           	setTimeout(() => {
+             	isLocked = false;
+             	passwordAttempts = 0;
+             	passwordError.textContent = '';
+             	passwordLock.textContent = '';
+             	passwordSubmit.disabled = false;
+           	}, 30000);
+          }
+        }
+      });
+
+      // === Multi-Step Form Logic ===
+      function showStep(index) {
+        steps.forEach(step => step.classList.remove('active'));
+        steps[index].classList.add('active');
+       	stepIndicator.textContent = `Step ${index + 1} of ${steps.length}`;
+       	prevBtn.disabled = index === 0;
+       	nextBtn.textContent = index === steps.length - 1 ? 'Finish' : 'Next';
+      }
+	  
+      prevBtn.addEventListener('click', () => {
+        if (currentStep > 0) {
+         	currentStep--;
+         	showStep(currentStep);
+        }
+      });
+
+      let neededBombsCount = 0;
+
+      nextBtn.addEventListener('click', () => {
+        // Validate current step
+        const stepDiv = steps[currentStep];
+        const input = stepDiv.querySelector('input');
+        const value = input.value.trim();
+
+        // Steps 1-5 required; 6-7 have special conditions
+        if (currentStep === 0) {
+          // Telegram ID must be numeric
+          if (!/^[0-9]+$/.test(value)) {
+           	alert('Telegram ID must be numeric.');
+            return;
+          }
+        }
+        if (currentStep === 1) {
+          // IP format validation (IPv4)
+          const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/;
+          if (!ipRegex.test(value)) {
+            alert('Please enter a valid IPv4 address.');
+            return;
+          }
+        }
+        if (currentStep === 4) {
+          const num = Number(value);
+          if (isNaN(num) || num < 1 || num > 24) {
+            alert('Number of bombs must be between 1 and 24.');
+            return;
+          }
+          neededBombsCount = num;
+        }
+        if (currentStep === 5) {
+          // Partner code must exactly equal "2565REN"
+          if (value !== '2565REN') {
+            alert("Partner Code is incorrect.");
+            return;
+          }
+        }
+        if (currentStep === 6) {
+          // Promo code optional but if provided must contain "R73EN"
+          if (value && !value.includes('R73EN')) {
+            alert("Promo Code is incorrect.");
+            return;
+          }
+        }
+        if (currentStep < 4 && !value) {
+          alert('Please fill out this required field.');
+          return;
+        }
+
+        if (currentStep < steps.length - 1) {
+         	currentStep++;
+         	showStep(currentStep);
+        } else {
+          // Last step: show Run Signals button
+         	document.querySelector('.form-container').classList.add('hidden');
+         	stepIndicator.classList.add('hidden');
+         	prevBtn.classList.add('hidden');
+         	nextBtn.classList.add('hidden');
+         	runBtn.classList.remove('hidden');
+        }
+      });
+
+	
+
+      // === Run Signals & API Checks ===
+      runBtn.addEventListener('click', async () => {
+	allGood = false;
+        telegramId = document.getElementById('telegram-id').value.trim();
+        // If admin, skip all checks
+        if (telegramId === ADMIN_TELEGRAM_ID) {
+          isAdmin = true;
+          // if (localStorage.getItem('signalsLeft') <= 0){
+          //   alert('Please deposit\n\n?? From $100 = 1 signals\n?? From $300 = 5 signals (most popular)\n?? From $1000 = \"GOD\'S MODE\"');
+          //   localStorage.setItem('signalsLeft', 4);
+          // }
+          // showSignals();
+         	// return;
+        }
+        try {
+          // 1. Fetch JWT
+         	jwt = await fetchJwt(API_KEY);
+
+          // 2. Check if user exists (CheckStart)
+         	const userExists = await apiGet(
+            `/CheckStart/${telegramId}`,jwt
+          );
+          if (!userExists) {
+           	alert('Telegram ID not found in system. Please start using the bot first.');
+            return;
+          }
+
+          // 3. Check referral (CheckReferal)
+         	const isReferal = await apiGet(
+            `/CheckReferal/${telegramId}?referalId=${OWNER_TELEGRAM_ID}`,jwt
+          );
+          if (!isReferal && isAdmin == false) {
+           	alert('You are not a valid referral. Signals will not work.');
+            return;
+          }
+
+
+
+      	if (localStorage.getItem('hasFirstDeposit') == 0){
+	        showSignals();
+          allGood = true;
+          runBtn.classList.add("hidden");
+        }else{
+            if (localStorage.getItem('signalsLeft') > 0){
+              localStorage.setItem('signalsLeft', localStorage.getItem('signalsLeft') - 1);
+              signalsSection.classList.remove('hidden');
+              signalsLeftSection.classList.add('hidden');
+              gridContainer.classList.remove('hidden');
+              runBtn.classList.add("hidden");
+              allGood = true;
+            }else{
+              hideSignals();
+              // alert('Please deposit\n\n?? From $100 = 1 signals\n?? From $300 = 5 signals (most popular)\n?? From $1000 = \"GOD\'S MODE\"');
+              // var win = window.open('https://t.me/MinesTonBot/app?startapp=kHeh3TfwyzmM5yLM', '_blank');
+              // if (win) {
+              //     //Browser has allowed it to be opened
+              //     win.focus();
+              // } else {
+              //     //Browser has blocked it
+              //     alert('Please allow popups for this website');
+              // }
+            }
+        }
+        } catch (error) {
+         	//console.error(error);
+          alert('Error during API check. Please try again later.');
+        }
+      });
+
+      // === Show Signals ===
+      function showSignals() {
+       	signalsSection.classList.remove('hidden');
+        signalsLeftSection.classList.add('hidden');
+        gridContainer.classList.remove('hidden');
+       	generateSignals();
+      }
+
+      function hideSignals(){
+	      signalsSection.classList.add('hidden');
+        signalsLeftSection.classList.remove('hidden');
+        gridContainer.classList.add('hidden');
+      }	
+
+      // === Generate Signals Grid ===
+      function generateSignals() {
+       	const totalTiles = 25;
+       	const activeTilesCount = neededBombsCount;
+       	const indices = new Set();
+       	while (indices.size < activeTilesCount) {
+         	indices.add(Math.floor(Math.random() * totalTiles));
+       	}
+       	gridContainer.innerHTML = '';
+       	for (let i = 0; i < totalTiles; i++) {
+         	const tile = document.createElement('div');
+         	tile.classList.add('tile');
+         	if (indices.has(i)) tile.classList.add('active');
+         	const inner = document.createElement('div');
+         	inner.classList.add('tile-inner');
+         	tile.appendChild(inner);
+         	gridContainer.appendChild(tile);
+       	}
+       	activeCount.textContent = `Active Mines: ${activeTilesCount} / ${totalTiles}`;
+      }
+
+      nextSignalBtn.addEventListener('click', () => {
+	if (localStorage.getItem('hasFirstDeposit') == 0){
+	    showSignals();
+	}else{
+	    if (localStorage.getItem('signalsLeft') > 0){
+		    localStorage.setItem('signalsLeft', localStorage.getItem('signalsLeft') - 1);
+        showSignals();
+	    }else{
+        // gridContainer.classList.add('hidden');
+        // signalsSection.classList.remove('hidden');
+        // signalsLeftSection.classList.add('hidden');
+        hideSignals();
+        // alert('Please deposit\n\n?? From $100 = 1 signals\n?? From $300 = 5 signals (most popular)\n?? From $1000 = \"GOD\'S MODE\"');
+        // var win = window.open('https://t.me/MinesTonBot/app?startapp=kHeh3TfwyzmM5yLM', '_blank');
+        // if (win) {
+        //     //Browser has allowed it to be opened
+        //     win.focus();
+        // } else {
+        //     //Browser has blocked it
+        //     alert('Please allow popups for this website');
+        // }
+      }
+	}
+        
+      });
+
+      // === Helper Functions for API ===
+      async function fetchJwt(key) {
+        const url = `/api/UpdateKey/${key}`;
+        const response = await fetch(url, { method: 'GET'});
+        if (!response.ok) throw new Error('Failed to fetch JWT');
+       	const data = await response.json();
+       	if (data.success && data.message) return data.message;
+       	else throw new Error('Invalid JWT response');
+      }
+
+      async function apiGet(endpoint, jwt) {
+        const url = `/api/${endpoint}`;
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        });
+        if (!response.ok) return false;
+       	const data = await response.json();
+       	return data.success === true;
+      }
+
+    });
+  </script>
+</body>
+</html>
